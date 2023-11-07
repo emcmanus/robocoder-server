@@ -1,0 +1,64 @@
+<.flash_group flash={@flash} />
+
+<script src="https://js.stripe.com/v3/"></script>
+
+<div>
+  <label for="api_key">Your License Key:</label>
+  <input type="text" id="api_key" value={@api_token} readonly>
+  <button onclick="copyToClipboard()">Copy</button>
+</div>
+
+<script>
+  function copyToClipboard() {
+    var copyText = document.getElementById("api_key");
+    copyText.select();
+    copyText.setSelectionRange(0, 99999); // For mobile devices
+    document.execCommand("copy");
+    alert("Copied.");
+  }
+
+  async function createStripeSession() {
+    try {
+      const response = await fetch('/create-stripe-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          // Add any other headers here
+        }
+      });
+      const { session_id } = await response.json();
+      // Redirect to Stripe Checkout
+      const stripe = Stripe('<%= Application.get_env(:robocoder, :stripe)[:publishable_key] %>');
+      stripe.redirectToCheckout({ sessionId: session_id });
+    } catch (error) {
+      console.error('Error creating Stripe session:', error);
+    }
+  }
+</script>
+
+<form id="subscribe-form" action="/create-stripe-session" method="post">
+  <input type="hidden" name="_csrf_token" value={ Plug.CSRFProtection.get_csrf_token() } />
+  <button type="submit">Subscribe</button>
+</form>
+
+<script>
+  document.getElementById('subscribe-form').onsubmit = async function(e) {
+    e.preventDefault();
+    try {
+      const response = await fetch(this.action, {
+        method: this.method,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': this.querySelector("[name='_csrf_token']").value
+        },
+        body: JSON.stringify({}) // Add any other necessary data here
+      });
+      const { session_id } = await response.json();
+      // Redirect to Stripe Checkout
+      const stripe = Stripe('<%= Application.get_env(:robocoder, :stripe)[:publishable_key] %>');
+      stripe.redirectToCheckout({ sessionId: session_id });
+    } catch (error) {
+      console.error('Error creating Stripe session:', error);
+    }
+  };
+</script>

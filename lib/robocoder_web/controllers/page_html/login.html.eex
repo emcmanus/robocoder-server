@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login</title>
+</head>
+<body>
+  <h1>Welcome to Robocoder</h1>
+  <p>Please sign in to continue</p>
+  <a href="/auth/github"><button>Sign in with Github</button></a>
+</body>
+</html>
