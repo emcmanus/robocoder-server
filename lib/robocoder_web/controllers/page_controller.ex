@@ -11,9 +11,13 @@ defmodule RobocoderWeb.PageController do
       if user.subscription_status != "active" do
         token = nil
       end
-      render(conn, "home.html", api_token: token, stripe_customer_id: user.stripe_customer_id, stripe_subscription_id: user.stripe_subscription_id, subscription_status: user.subscription_status)
+      if user.subscription_status == "active" do
+        render(conn, "home.html", layout: false, api_token: token, stripe_customer_id: user.stripe_customer_id, stripe_subscription_id: user.stripe_subscription_id, subscription_status: user.subscription_status, manage_subscription_url: Application.get_env(:robocoder, :stripe)[:manage_url])
+      else
+        render(conn, "subscribe.html", layout: false )
+      end
     else
-      render(conn, "login.html")
+      render(conn, "login.html", layout: false)
     end
   end
 
@@ -61,10 +65,6 @@ defmodule RobocoderWeb.PageController do
 
       try do
         { :ok, session } = Stripe.Checkout.Session.create(stripe_params)
-
-        IO.inspect(session, label: "Sesion")
-        IO.inspect(user, label: "User")
-
         if !user.stripe_customer_id do
           Accounts.update_stripe_customer_id(user, session.customer)
         end

@@ -1,20 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Robocoder</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    html { width: 100%; height: 100%; }
+  </style>
+</head>
+<body class="h-full v-full" style="width: 100%; height: 100%;">
+
 <.flash_group flash={@flash} />
 
 <script src="https://js.stripe.com/v3/"></script>
 
-<div>
-  <label for="api_key">Your License Key:</label>
-  <input type="text" id="api_key" value={@api_token} readonly>
-  <button onclick="copyToClipboard()">Copy</button>
-</div>
-
 <script>
   function copyToClipboard() {
-    var copyText = document.getElementById("api_key");
-    copyText.select();
-    copyText.setSelectionRange(0, 99999); // For mobile devices
-    document.execCommand("copy");
-    alert("Copied.");
+    var copyText = document.getElementById("api_key").value;
+    navigator.clipboard.writeText(copyText).then(() => {
+      document.getElementById('copy_btn').innerText = "Copied";
+    }).catch(err => {
+      console.error('Error copying text: ', err);
+    });
   }
 
   async function createStripeSession() {
@@ -36,29 +44,26 @@
   }
 </script>
 
-<form id="subscribe-form" action="/create-stripe-session" method="post">
-  <input type="hidden" name="_csrf_token" value={ Plug.CSRFProtection.get_csrf_token() } />
-  <button type="submit">Subscribe</button>
-</form>
+  <div class="flex items-center justify-center h-full">
+    <center>
+      <p class="text-2xl font-bold center">License Key</p><br/>
 
-<script>
-  document.getElementById('subscribe-form').onsubmit = async function(e) {
-    e.preventDefault();
-    try {
-      const response = await fetch(this.action, {
-        method: this.method,
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-Token': this.querySelector("[name='_csrf_token']").value
-        },
-        body: JSON.stringify({}) // Add any other necessary data here
-      });
-      const { session_id } = await response.json();
-      // Redirect to Stripe Checkout
-      const stripe = Stripe('<%= Application.get_env(:robocoder, :stripe)[:publishable_key] %>');
-      stripe.redirectToCheckout({ sessionId: session_id });
-    } catch (error) {
-      console.error('Error creating Stripe session:', error);
-    }
-  };
-</script>
+      <p class="text-gray-500 mb-4">Copy and paste this key into RoboCoder.</p>
+
+      <div class="flex items-center space-x-2">
+        <input type="text" id="api_key" value={@api_token} readonly class="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 bg-gray-100 cursor-not-allowed" disabled>
+        <button id="copy_btn" onclick="copyToClipboard()" class="text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 ml-2 transition duration-300 ease-in-out">
+          Copy
+        </button>
+      </div>
+
+
+      <br/>
+      <a class="text-blue-600 hover:text-blue-700 cursor-pointer" href={@manage_subscription_url}>Manage subscription</a><br/>
+      <a class="text-blue-600 hover:text-blue-700 cursor-pointer" href="/logout">Log out</a>
+
+    </center>
+  </div>
+  
+</body>
+</html>

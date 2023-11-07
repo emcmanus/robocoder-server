@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Robocoder</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    html { width: 100%; height: 100%; }
+  </style>
+</head>
+<body class="h-full v-full" style="width: 100%; height: 100%;">
+
+<.flash_group flash={@flash} />
+
+  <script src="https://js.stripe.com/v3/"></script>
+  
+  <div class="flex items-center justify-center h-full">
+    <center>
+      <p class="text-2xl font-bold center">Redirecting to Stripe...</p><br/>
+
+      <form id="subscribe-form" action="/create-stripe-session" method="post">
+        <input type="hidden" name="_csrf_token" value={ Plug.CSRFProtection.get_csrf_token() } />
+        <button id="continue" type="submit" class="text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 ml-2 transition duration-300 ease-in-out">
+          Continue
+        </button>
+      </form>
+
+    </center>
+  </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.getElementById('subscribe-form');
+
+  const submitForm = () => {
+    const csrfToken = form.querySelector('[name="_csrf_token"]').value;
+    const postData = new URLSearchParams({ '_csrf_token': csrfToken });
+
+    fetch('/create-stripe-session', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: postData,
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      console.log("Session id", data.session_id);
+      // Ensure that the server-side template is correctly providing the publishable key
+      const stripe = Stripe('<%= Application.get_env(:robocoder, :stripe)[:publishable_key] %>');
+      return stripe.redirectToCheckout({ sessionId: data.session_id });
+    })
+    .catch(error => {
+      console.error('Error creating Stripe session:', error);
+    });
+  };
+
+  // Set up the form to submit via JS when the actual form is submitted
+  form.addEventListener('submit', function(event) {
+    event.preventDefault(); // Prevent the default form submission
+    submitForm(); // Call the submit function defined above
+  });
+
+  // Immediately submit the form when the page is ready
+  submitForm();
+});
+</script>
+
+</body>
+</html>

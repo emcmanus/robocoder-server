@@ -68,7 +68,8 @@ config :robocoder, :stripe,
   publishable_key: System.get_env("STRIPE_PUBLISHABLE_KEY"),
   price_id: System.get_env("STRIPE_PRICE_ID"),
   success_url: System.get_env("SUCCESS_URL"),
-  cancel_url: System.get_env("CANCEL_URL")
+  cancel_url: System.get_env("CANCEL_URL"),
+  manage_url: System.get_env("STRIPE_MANAGE_URL")
 
 config :stripity_stripe, api_key: System.get_env("STRIPE_SECRET_KEY")
 
