@@ -7,10 +7,13 @@ defmodule RobocoderWeb.PageController do
 
     if user_id do
       user = Accounts.get_user(user_id)
-      token = user.api_token
-      if user.subscription_status != "active" do
-        token = nil
+
+      token = if user.subscription_status != "active" do
+        nil
+      else
+        user.api_token
       end
+
       if user.subscription_status == "active" do
         render(conn, "home.html", layout: false, api_token: token, stripe_customer_id: user.stripe_customer_id, stripe_subscription_id: user.stripe_subscription_id, subscription_status: user.subscription_status, manage_subscription_url: Application.get_env(:robocoder, :stripe)[:manage_url])
       else
@@ -57,10 +60,11 @@ defmodule RobocoderWeb.PageController do
       }
 
       # Check if the user has an existing stripe_customer_id and add it to the params
-      if user.stripe_customer_id do
-        stripe_params = Map.drop(stripe_params, [:customer_email])
-        stripe_params = Map.drop(stripe_params, [:metadata])
-        stripe_params = Map.put(stripe_params, :customer, user.stripe_customer_id)
+      stripe_params = if user.stripe_customer_id do
+        stripe_params
+        |> Map.drop([:customer_email])
+        |> Map.drop([:metadata])
+        |> Map.put(:customer, user.stripe_customer_id)
       end
 
       try do

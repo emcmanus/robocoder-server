@@ -22,6 +22,11 @@ defmodule Robocoder.Accounts do
     |> Repo.one()
   end
 
+  def update_user_subscription_from_session(user, session, status) do
+    changeset = Ecto.Changeset.change(user, subscription_status: status, stripe_customer_id: session.customer, stripe_subscription_id: session.subscription)
+    Repo.update(changeset)
+  end
+
   def update_user_subscription_status(user, new_status) when is_binary(new_status) do
     changeset = Ecto.Changeset.change(user, subscription_status: new_status)
     Repo.update(changeset)

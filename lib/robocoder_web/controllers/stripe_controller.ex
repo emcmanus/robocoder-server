@@ -26,10 +26,7 @@ defmodule RobocoderWeb.StripeController do
         send_resp(conn, 404, "User not found")
 
       user ->
-        {:ok, user} = Accounts.update_stripe_customer_id(user, session.customer)
-        {:ok, user} = Accounts.update_stripe_subscription_id(user, session.subscription)
-        {:ok, user} = Accounts.update_user_subscription_status(user, "active")
-
+        Accounts.update_user_subscription_from_session(user, session, "active")
         send_resp(conn, 200, "")
     end
   end
