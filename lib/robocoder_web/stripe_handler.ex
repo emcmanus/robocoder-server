@@ -41,7 +41,7 @@ defmodule RobocoderWeb.StripeHandler do
       {:ok, _} = Accounts.update_user_subscription_status(user, "canceled")
       :ok
     else
-      {:error, "User not found"}
+      {:error, "Subscription not found"}
     end
   end
 
@@ -58,7 +58,7 @@ defmodule RobocoderWeb.StripeHandler do
       {:ok, _} = Accounts.update_user_subscription_status(user, new_status)
       :ok
     else
-      {:error, "User not found"}
+      {:error, "Subscription not found"}
     end
   end
 
