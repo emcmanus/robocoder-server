@@ -39,8 +39,11 @@ defmodule RobocoderWeb.Endpoint do
   plug Plug.RequestId
   plug Plug.Telemetry, event_prefix: [:phoenix, :endpoint]
 
-  # Only for the Stripe webhook validation. TODO - might be easier to use the built-in plug for this
-  plug RobocoderWeb.StripeWebhookPlug
+  # MUST be before Plug.Parsers
+  plug Stripe.WebhookPlug,
+    at: "/stripe-webhook",
+    handler: RobocoderWeb.StripeHandler,
+    secret: System.get_env("STRIPE_ENDPOINT_SECRET")
 
   plug Plug.Parsers,
     parsers: [:urlencoded, :multipart, :json],

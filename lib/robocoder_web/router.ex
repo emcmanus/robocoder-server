@@ -33,10 +33,11 @@ defmodule RobocoderWeb.Router do
     get "/", PageController, :index
   end
 
+  # Stripe webhook mounted to /stripe-webhook by Stripe.WebhookPlug (see lib/robocoder_web/endpoint.ex)
+
   scope "/", RobocoderWeb do
     pipe_through :unsafe_api
     post "/validate-license-key", AccountsController, :validate_license_key
-    post "/stripe-webhook", StripeController, :webhook
 
     post "/events/mail", PageController, :stripe_success # fuck you gmail
   end
