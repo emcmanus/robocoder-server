@@ -65,6 +65,8 @@ defmodule RobocoderWeb.PageController do
         |> Map.drop([:customer_email])
         |> Map.drop([:metadata])
         |> Map.put(:customer, user.stripe_customer_id)
+      else
+        stripe_params
       end
 
       try do
